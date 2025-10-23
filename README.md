@@ -131,19 +131,7 @@ For detail, see our technical report [here](https://arxiv.org/abs/2509.02437).
 
 For detailed hardware guide, check  [Hardware Guide](https://docs.google.com/document/d/1TjhJOeJXsD5kmoYF-kuWfPju6WSUeSnivJiU7TH4vWs/edit?tab=t.0#heading=h.k991lzlarfb8)
 
-<!-- ---
 
-## ⚙️ Hardware Assembly
-
-> 📚 **Detailed build instructions coming soon!**
-
-We're preparing comprehensive documentation including:
-- 📋 Complete parts list
-- 🔌 Wiring diagrams
-- 🔧 Mechanical assembly guide
-- 🎥 Video tutorials
-
-**Stay tuned for the Google Drive link with full documentation!** -->
 
 ---
 
@@ -173,6 +161,23 @@ We welcome contributions! Here's how you can help:
 ### 🤖 Adding New Robot Support
 
 ---
+
+## ❓ FAQ
+
+### 1. Is this project compatible with my XXX robot arm?
+**A:** Please first refer to the **Supported Robots** section above, where part of compatible arms are listed along with corresponding config.  Note that this project aims to provide a **universal teleoperation framework** and example control code. Here, “compatibility” means that the operator can intuitively control the corresponding follower arm on hardware side by using UArm.  
+This is independent of different brands’ software APIs — it only depends on the **joint topology** of the robot.  To find your robot’s joint topology, check [Hardware Guide](https://docs.google.com/document/d/1TjhJOeJXsD5kmoYF-kuWfPju6WSUeSnivJiU7TH4vWs/edit?tab=t.0#heading=h.k991lzlarfb8).
+
+---
+
+### 2. How can I develop based on my own follower arm?
+**A:** Start by reading [`LeRobot-Anything-U-Arm/src/uarm/scripts/Uarm_teleop/servo_reader`](https://github.com/MINT-SJTU/LeRobot-Anything-U-Arm/blob/main/src/uarm/scripts/Uarm_teleop/servo_reader.py).  
+This script reads all UArm joint angles and is wrapped as a ROS node.  
+You need to write a **subscriber** based on your follower arm’s API that receives joint commands from the `'/servo_angles'` topic and sends them to your arm.  [`Dobot Controller`](https://github.com/MINT-SJTU/LeRobot-Anything-U-Arm/blob/main/src/uarm/scripts/Follower_Arm/Dobot/servo2Dobot.py) is a simple example.
+
+If you prefer not to use ROS communication, you can directly read the UArm’s servo command data and send them to your follower arm.  
+See this [`ARX example`](https://github.com/MINT-SJTU/LeRobot-Anything-U-Arm/blob/main/src/uarm/scripts/Follower_Arm/ARX/arx_teleop.py) for reference.
+
 
 ## 🔧 Order Link
 If you are tired of DIY, buy it on [JD 京东链接](https://item.jd.com/10170154240149.html) or contact business@evomind-tech.com for purchase.
