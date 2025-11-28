@@ -22,7 +22,7 @@
 *Built upon the giants: [LeRobot](https://github.com/huggingface/lerobot), [SO-100/SO-101](https://github.com/TheRobotStudio/SO-ARM100), [XLeRobot](https://github.com/Vector-Wangel/XLeRobot#), [Gello](https://github.com/wuphilipp/gello_mechanical/tree/main)*
 
 # 📰 News
-- 2025-11-10: **Global version** based on Feetech STS3215 servo is launched! Chech [here](https://docs.google.com/document/d/1dUN4sJhYx_iuS_rFvj-YpyX4Y7nneRDTKJxCQ7PTXpY/edit?usp=sharing).
+- 2025-11-10: **Global version** based on Feetech STS3215 servo is launched! Check [here](https://docs.google.com/document/d/1dUN4sJhYx_iuS_rFvj-YpyX4Y7nneRDTKJxCQ7PTXpY/edit?usp=sharing).
 - 2025-11-1: We add support for SO-100 and XLeRobot Teleoperation! Check [here](github.com/MINT-SJTU/LeRobot-Anything-U-Arm/tree/main/src/uarm/scripts/Follower_Arm/LeRobot).
 - 2025-09-10: STEP files of 3 configs are uploaded.
 - 2025-09-08: Hardware Assembly Video Uploaded! We also open-sourced 5 datasets collected by UArm with XArm6 at [our huggingface page](https://huggingface.co/MINT-SJTU)
@@ -188,10 +188,10 @@ Please note your Robotic Arm brand and model. 下单/咨询请注明使用的机
 ## 👥 Contributors
 
 - **Yanwen Zou** - Hardware&Software System Design
+- **Yanhan Sun** - Feetech Version Design
 - **Zhaoye Zhou** - Hareware Assemble and Adjustment
 - **Chenyang Shi** - SAPIEN and website setup
 - **Zewei Ye** - LeRobot adaptation and real-world Experiment
-- **Yanhan Sun** - Feetech Version Design
 - **Jiaqi Lu** - Real-world Experiment
 - **Jie Yi** - Real-world Experiment
 - **Nuobei Zhu** - Hardware and Production Optimization 
