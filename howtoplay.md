@@ -1,35 +1,101 @@
 # 🔧 System Setup
 
-## Prerequisites
+## OS / ROS Matrix
 
-- **Ubuntu 20.04**
-- [**ROS Noetic**](https://wiki.ros.org/noetic/Installation/Ubuntu)
-- **Python 3.9+**
+- **Ubuntu 24.04 + ROS 2 Jazzy (host)**: use this for new installs. The teleop nodes in this repo are still ROS1; run them in a Noetic container or port them to ROS2.
+- **Ubuntu 20.04 + ROS1 Noetic (legacy)**: original native environment. Kept below for reference.
 
 ---
 
-## Step-by-Step Setup
+## Ubuntu 24.04 + ROS 2 Jazzy + Conda
+
+1. **Install ROS 2 Jazzy (system)**
+
+   ```sh
+   sudo apt update
+   sudo apt install -y software-properties-common curl
+   sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+     -o /usr/share/keyrings/ros-archive-keyring.gpg
+   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+   sudo apt update
+   sudo apt install -y ros-jazzy-desktop ros-dev-tools python3-colcon-common-extensions
+   ```
+
+2. **Create and activate a Conda env**
+
+   ```sh
+   # install mamba/conda first if you don't have it
+   mamba create -n uarm-ros2 python=3.12 pip
+   mamba activate uarm-ros2
+   ```
+
+3. **Install Python dependencies (non-ROS)**
+
+   - `cv-bridge` 在 PyPI 无 Jazzy 版本，需过滤；`pyrealsense2` 旧版本不支持 Py3.12，换用 2.56.5.9235（或无相机可跳过）。
+   ```sh
+   # 生成适配 24.04/py3.12 的依赖清单
+   grep -v '^cv-bridge' requirements.txt \
+     | sed 's/^pyrealsense2==2.55.1.6486/pyrealsense2==2.56.5.9235/' \
+     | sed 's/^scipy==1.10.1/scipy==1.11.4/' \
+     > /tmp/requirements-nocv.txt
+   pip install -r /tmp/requirements-nocv.txt
+
+   # 如需在宿主 ROS2 环境使用 cv_bridge（可选）
+   sudo apt install -y ros-jazzy-cv-bridge
+   ```
+
+4. **Source ROS 2 inside the env when working**
+
+   ```sh
+   source /opt/ros/jazzy/setup.bash
+   ```
+
+5. **Run the ROS1 teleop stack from a Noetic container (required until ROS2 nodes exist)**
+
+   The codebase uses ROS1 nodes. On Ubuntu 24.04, launch them in a Noetic container with host networking and device access, then follow the ROS1 steps below inside the container:
+
+   ```sh
+   docker run --rm -it --net host --privileged --name uarm-noetic \
+     -v /dev:/dev \
+     -v $(pwd):/work \
+     osrf/ros:noetic-desktop-full \
+     bash -lc "cd /work && pip install -r overall_requirements.txt && catkin_make && bash"
+   ```
+
+   Inside the container:
+   ```sh
+   source devel/setup.bash
+   roscore
+   # open another shell in the same container (docker exec -it uarm-noetic bash)
+   # and run the ROS1 teleop commands listed below
+   ```
+
+   > If you need ROS2 consumers on the host, bridge topics from the container with `ros1_bridge` (build it inside the container with both workspaces sourced).
+
+---
+
+## Legacy ROS1 (Ubuntu 20.04 / Noetic)
 
 1. **Install Python Dependencies**
 
    ```sh
-   # install both ros1 and simulation requirements
-   pip install -r overall_requirements.txt 
+   # install both ROS1 and simulation requirements
+   pip install -r overall_requirements.txt
    ```
    
-   If your system doesn't support ROS1, you can install the dependencies without ROS1 with the following command which supports simulation teleoperation and check [this note](https://github.com/MINT-SJTU/Lerobot-Anything-U-arm/blob/main/src/simulation/README.md) . 
+   If your system doesn't support ROS1, you can install the dependencies without ROS1 with the following command which supports simulation teleoperation and check [this note](https://github.com/MINT-SJTU/Lerobot-Anything-U-arm/blob/main/src/simulation/README.md).
    ```sh
    pip install -r requirements.txt
    ```
 
-3. **Build Catkin Workspace**
+2. **Build Catkin Workspace**
 
    ```sh
    catkin_make
    source devel/setup.bash
    ```
 
-4. **Verify Installation**
+3. **Verify Installation**
 
    ```sh
    # Test if ROS can find the package
