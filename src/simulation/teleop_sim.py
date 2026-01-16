@@ -212,22 +212,11 @@ class ServoTeleoperatorSim:
         except Empty:
             return None
     
-    def angle_to_gripper(self, angle_rad: float, pos_min: float, pos_max: float, 
-                        angle_range: float = 1.5 * np.pi) -> float:
-        """Map servo angle to gripper position
-        
-        Args:
-            angle_rad: Servo angle (radians)
-            pos_min: Gripper minimum position
-            pos_max: Gripper maximum position
-            angle_range: Servo angle range
-            
-        Returns:
-            Gripper position value
-        """
-        ratio = max(0, 1 - (angle_rad / angle_range))
+    def angle_to_gripper(self, angle_rad: float, pos_min: float, pos_max: float, angle_range: float = 1.5 * np.pi) -> float:
+        ratio = np.clip(angle_rad / angle_range, 0.0, 1.0)  # 角度越大，夹爪值越大
         position = pos_min + (pos_max - pos_min) * ratio
-        return float(np.clip(position, pos_min, pos_max))
+        return float(position)
+
 
     def convert_pose_to_action(self, pose: list) -> np.ndarray: 
         """Convert servo position to simulation action based on different robot arm types
@@ -250,11 +239,24 @@ class ServoTeleoperatorSim:
             action[4], action[5] = -action[5], -action[4]  # Swap joints 4 and 5
         
         elif self.robot_uids == "piper":  # 6-axis robot arm + dual-finger gripper
-            action = np.array(pose)
-            action[-1] = self.angle_to_gripper(action[-1], 0, 0.04)
+            raw = np.array(pose)
+            # 映射为初始角度即为张开，并反向角度确保手势方向一致
+            # 使用较小的 angle_range（self.gripper_range），确保舵机到极限时仿真能完全闭合
+            gripper_val = self.angle_to_gripper(-raw[-1], 0.04, 0, angle_range=self.gripper_range)
+            
+            # 明确指定物理舵机(ID 0-5)到仿真关节(0-5)的对应关系与方向
+            # 0: 基座旋转；1: 肩俯仰(取反)；2: 肘俯仰(取反)；3/4: 腕关节互换且取反 wrist2；5: 腕3
+            mapped = np.zeros_like(raw)
+            mapped[0] = raw[0]
+            mapped[1] = -raw[1]
+            mapped[2] = -raw[2]      # 这里确保 2 号舵机映射到仿真关节 2
+            mapped[3] = raw[3]       # 舵机4 -> 仿真关节3
+            mapped[4] = -raw[4]      # 舵机3 -> 仿真关节4（方向取反）
+            mapped[5] = raw[5]
+            mapped[-1] = gripper_val
 
-            action = np.concatenate([action, [action[-1]]])
-            action[3], action[4] = action[4], -action[3]  # Swap joints 4 and 5
+            # 仿真期望双指输入，复制一份夹爪值到末尾
+            action = np.concatenate([mapped[:-1], [gripper_val]])
 
         elif self.robot_uids == "so100":  # 5-axis robot arm
             pose_copy = pose.copy()
